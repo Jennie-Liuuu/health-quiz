@@ -2,9 +2,27 @@ import { useState, useEffect } from 'react';
 import { apiClient } from './api/client';
 import './index.css';
 
+// 安全存储工具
+const safeStorage = {
+  getItem: (key: string) => {
+    try {
+      return sessionStorage.getItem(key) || '';
+    } catch {
+      return '';
+    }
+  },
+  setItem: (key: string, value: string) => {
+    try {
+      sessionStorage.setItem(key, value);
+    } catch {
+      // 忽略
+    }
+  },
+};
+
 function App() {
   const [step, setStep] = useState(1);
-  const [sessionId, setSessionId] = useState(localStorage.getItem('sessionId') || '');
+  const [sessionId, setSessionId] = useState(safeStorage.getItem('sessionId'));
   
   // Step 1
   const [gender, setGender] = useState('');
@@ -70,7 +88,7 @@ function App() {
       
       const newSessionId = res.data.sessionId;
       setSessionId(newSessionId);
-      localStorage.setItem('sessionId', newSessionId);
+      safeStorage.setItem('sessionId', newSessionId);
       setStep(2);
     } catch (error) {
       alert('保存失败，请重试');
