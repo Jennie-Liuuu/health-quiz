@@ -12,7 +12,32 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+// 明确允许的域名列表
+const allowedOrigins = [
+  'http://localhost:5173',           // 本地 Vite 开发
+  'http://localhost:3000',           // 本地 Next.js 开发
+  'https://health-quiz.edgeone.dev', // EdgeOne 生产环境
+  'https://health-quiz-lake.vercel.app', // Vercel 备用地址
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // 允许没有 origin 的请求（如 Postman、curl）
+    if (!origin) {
+      return callback(null, true);
+    }
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      console.warn(`❌ CORS 拒绝: ${origin}`);
+      return callback(new Error('CORS 不允许此来源'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'x-session-id'],
+}));
+
 app.use(express.json());
 
 // 请求日志中间件
